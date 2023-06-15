@@ -17,3 +17,4 @@ add_subdirectory(extern)
 add_executable(NBodyCuda src/main.cpp)
 
 target_link_libraries(NBodyCuda glfw ${OPENGL_LIBRARIES} imgui)
+
