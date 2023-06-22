@@ -8,7 +8,11 @@ add_library(imgui STATIC
         imgui/imgui_demo.cpp
         imgui/imgui_tables.cpp
         imgui/backends/imgui_impl_glfw.cpp
-        imgui/backends/imgui_impl_opengl2.cpp
+        imgui/backends/imgui_impl_opengl3.cpp
 )
 target_include_directories(imgui PUBLIC imgui imgui/backends)
 target_link_libraries(imgui PUBLIC glfw)
+
+# glad
+add_library(glad STATIC glad/src/glad.c)
+target_include_directories(glad PUBLIC glad/include)

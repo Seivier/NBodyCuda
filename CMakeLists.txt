@@ -13,8 +13,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 
 add_subdirectory(extern)
+add_subdirectory(src)
 
-add_executable(NBodyCuda src/main.cpp)
 
-target_link_libraries(NBodyCuda glfw ${OPENGL_LIBRARIES} imgui)
 
