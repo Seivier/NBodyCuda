@@ -8,33 +8,8 @@
 
 #include "shader.h"
 
-Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
-	: _id(0)
-{
-	_id = glCreateProgram();
-	auto vertex = loadSources(GL_VERTEX_SHADER, vertexPath);
-	auto fragment = loadSources(GL_FRAGMENT_SHADER, fragmentPath);
 
-	linkSources(vertex, fragment);
-}
-
-Shader::Shader(const std::string& vertexPath, const std::string& geometryPath, const std::string& fragmentPath)
-	: _id(0)
-{
-	_id = glCreateProgram();
-	auto vertex = loadSources(GL_VERTEX_SHADER, vertexPath);
-	auto geometry = loadSources(GL_GEOMETRY_SHADER, geometryPath);
-	auto fragment = loadSources(GL_FRAGMENT_SHADER, fragmentPath);
-
-	linkSources(vertex, geometry, fragment);
-}
-
-Shader::~Shader()
-{
-	glDeleteProgram(_id);
-}
-
-unsigned int Shader::loadSources(unsigned int type, const std::string& path)
+static void attachSources(unsigned int type, unsigned int const id, const std::string& path)
 {
 	auto shader = glCreateShader(type);
 	std::ifstream shaderFile(path);
@@ -52,15 +27,19 @@ unsigned int Shader::loadSources(unsigned int type, const std::string& path)
 		std::cerr << "Shader compilation error: " << infoLog << std::endl;
 	}
 
-	return shader;
+	glAttachShader(id, shader);
+	glDeleteShader(shader);
 }
 
-void Shader::linkSources(unsigned int vertex, unsigned int fragment) const
+Shader::Shader(const std::string& vertexPath, const std::string& geometryPath, const std::string& fragmentPath)
+	: _id(0)
 {
-	glAttachShader(_id, vertex);
-	glAttachShader(_id, fragment);
-	glLinkProgram(_id);
+	_id = glCreateProgram();
+	attachSources(GL_VERTEX_SHADER, _id, vertexPath);
+	attachSources(GL_GEOMETRY_SHADER, _id, geometryPath);
+	attachSources(GL_FRAGMENT_SHADER, _id, fragmentPath);
 
+	glLinkProgram(_id);
 	int success;
 	char infoLog[512];
 	glGetProgramiv(_id, GL_LINK_STATUS, &success);
@@ -69,31 +48,13 @@ void Shader::linkSources(unsigned int vertex, unsigned int fragment) const
 		glGetProgramInfoLog(_id, 512, nullptr, infoLog);
 		std::cerr << "Shader linking error: " << infoLog << std::endl;
 	}
-
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
 }
 
-void Shader::linkSources(unsigned int vertex, unsigned int geometry, unsigned int fragment) const
+Shader::~Shader()
 {
-	glAttachShader(_id, vertex);
-	glAttachShader(_id, geometry);
-	glAttachShader(_id, fragment);
-	glLinkProgram(_id);
-
-	int success;
-	char infoLog[512];
-	glGetProgramiv(_id, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(_id, 512, nullptr, infoLog);
-		std::cerr << "Shader linking error: " << infoLog << std::endl;
-	}
-
-	glDeleteShader(vertex);
-	glDeleteShader(geometry);
-	glDeleteShader(fragment);
+	glDeleteProgram(_id);
 }
+
 void Shader::bind() const
 {
 	glUseProgram(_id);
@@ -101,4 +62,25 @@ void Shader::bind() const
 void Shader::unbind() const
 {
 	glUseProgram(0);
+}
+void Shader::setUniform1f(const std::string& name, float value) const
+{
+	glUniform1f(getUniformLocation(name), value);
+}
+
+void Shader::setUniform1i(const std::string& name, int value) const
+{
+	glUniform1i(getUniformLocation(name), value);
+}
+
+int Shader::getUniformLocation(const std::string& name) const
+{
+	if (_uniformLocationCache.find(name) != _uniformLocationCache.end())
+		return _uniformLocationCache[name];
+
+	int location = glGetUniformLocation(_id, name.c_str());
+	if (location == -1)
+		std::cerr << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+	_uniformLocationCache[name] = location;
+	return location;
 }
