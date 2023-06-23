@@ -1,5 +1,5 @@
 
-add_executable(NBodyCuda main.cpp shader.cpp shader.h)
+add_executable(NBodyCuda main.cpp shader.cpp shader.h buffer.cpp buffer.h)
 target_link_libraries(NBodyCuda glfw glad ${OPENGL_LIBRARIES} imgui)
 
 file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/shaders)

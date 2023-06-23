@@ -6,123 +6,25 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h> // Will drag system OpenGL headers
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 #include <random>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include "shader.h"
+#include "buffer.h"
 
-struct Shape
-{
-	GLuint vao, vbo, ebo;
-};
 
 static void glfw_error_callback(int error, const char* description)
 {
 	std::cerr << "GLFW Error " << error << ": " << description << std::endl;
 }
 
-static GLuint createProgram()
-{
-	auto program = glCreateProgram();
-	auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	auto geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-	auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	std::ifstream vertexShaderFile("shaders/nbody.vert");
-	std::string
-		vertexShaderSource((std::istreambuf_iterator<char>(vertexShaderFile)), std::istreambuf_iterator<char>());
-
-	std::ifstream geometryShaderFile("shaders/nbody.geom");
-	std::string
-		geometryShaderSource((std::istreambuf_iterator<char>(geometryShaderFile)), std::istreambuf_iterator<char>());
-
-	std::ifstream fragmentShaderFile("shaders/nbody.frag");
-	std::string
-		fragmentShaderSource((std::istreambuf_iterator<char>(fragmentShaderFile)), std::istreambuf_iterator<char>());
-
-	const char* vertexShaderSourcePtr = vertexShaderSource.c_str();
-	const char* geometryShaderSourcePtr = geometryShaderSource.c_str();
-	const char* fragmentShaderSourcePtr = fragmentShaderSource.c_str();
-
-	glShaderSource(vertexShader, 1, &vertexShaderSourcePtr, nullptr);
-	glShaderSource(geometryShader, 1, &geometryShaderSourcePtr, nullptr);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSourcePtr, nullptr);
-
-	glCompileShader(vertexShader);
-	glCompileShader(geometryShader);
-	glCompileShader(fragmentShader);
-
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, geometryShader);
-	glAttachShader(program, fragmentShader);
-
-	glLinkProgram(program);
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(geometryShader);
-	glDeleteShader(fragmentShader);
-
-	return program;
-}
-
-static void setupVAO(GLuint& program, Shape& shape)
-{
-
-	glBindVertexArray(shape.vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, shape.vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shape.ebo);
-
-	auto pos = glGetAttribLocation(program, "position");
-	glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(pos);
-
-	auto acc = glGetAttribLocation(program, "acceleration");
-	glVertexAttribPointer(acc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(acc);
-
-	glBindVertexArray(0);
-}
-
-static void fillBuffers(Shape& shape)
-{
-	glGenVertexArrays(1, &shape.vao);
-	glGenBuffers(1, &shape.vbo);
-	glGenBuffers(1, &shape.ebo);
-
-	glBindVertexArray(shape.vao);
-
-	// Draw a triangle
-	float vertices[] = {
-		// positions         // colors
-		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
-		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // top
-	};
-
-	unsigned int indices[] = {  // note that we start from 0!
-		0, 1, 2
-	};
-
-	glBindBuffer(GL_ARRAY_BUFFER, shape.vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shape.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glBindVertexArray(0);
-}
-
-static void drawCall(Shape& shape)
-{
-	glBindVertexArray(shape.vao);
-	glDrawElements(GL_POINTS, 3, GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(0);
-}
 
 // Main code
 int main(int, char**)
@@ -130,8 +32,6 @@ int main(int, char**)
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
-
-
 
 	// Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -156,8 +56,9 @@ int main(int, char**)
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	// Create window with graphics context
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(800, 800, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
 	if (window == nullptr)
 		return 1;
 	glfwMakeContextCurrent(window);
@@ -188,21 +89,24 @@ int main(int, char**)
 
 	// Our state
 	bool use_quads = false;
-	float acceleration = 0.0f;
+	ImVec2 acceleration = ImVec2(0.5f, 0.5f);
 	float ratio = 1.0f;
 	int n = 100;
 	ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
 
 	// Create a shader program
-	GLuint program = createProgram();
-	Shape shape{};
-	fillBuffers(shape);
-	setupVAO(program, shape);
+	Shader shader("shaders/nbody.vert", "shaders/nbody.geom", "shaders/nbody.frag");
+	Buffer buffer;
+	buffer.setLayout(shader);
+	buffer.setAcceleration(acceleration.x, acceleration.y, 0.0f);
+	buffer.setRatio(ratio);
+	buffer.setSize(n);
+	buffer.build();
+
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -215,7 +119,10 @@ int main(int, char**)
 			ImGui::Checkbox("View quads?", &use_quads);      // Edit bools storing our window open/close state
 
 			ImGui::SliderInt("Number of points", &n, 1, 10000);
-			ImGui::InputFloat("Special Gravity", &acceleration, 0.1f, 1.0f, "%.3f");
+			// Vec2 input
+			ImGui::DragFloat2("Acceleration", (float*)&acceleration, 0.01f, 0.0f, 1.0f);
+
+			// ImGui::ColorEdit("Special Gravity", &acceleration, 0.1f, 1.0f, "%.3f");
 			ImGui::SliderFloat("SG Ratio",
 				&ratio,
 				0.0f,
@@ -226,6 +133,12 @@ int main(int, char**)
 			ImGui::End();
 		}
 
+
+		buffer.setSize(n);
+		buffer.setAcceleration(acceleration.x, acceleration.y, 0.0f);
+		buffer.setRatio(ratio);
+		buffer.build();
+
 		// Rendering
 		ImGui::Render();
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -234,8 +147,16 @@ int main(int, char**)
 			clear_color.z * clear_color.w,
 			clear_color.w);
 
-		glUseProgram(program);
-		drawCall(shape);
+		shader.bind();
+
+		shader.setUniform1i("useQuads", use_quads);
+
+		buffer.bind();
+
+		glDrawElements(GL_POINTS, n, GL_UNSIGNED_INT, 0);
+
+		buffer.unbind();
+		shader.unbind();
 
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);

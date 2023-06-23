@@ -2,10 +2,8 @@
 // Created by Vicente González on 18-06-23.
 //
 
-#ifndef _SHADER_H_
-#define _SHADER_H_
-
-#include <glad/glad.h>
+#ifndef NBODYCUDA_SHADER_H_
+#define NBODYCUDA_SHADER_H_
 
 #include <string>
 #include <unordered_map>
@@ -25,9 +23,10 @@ class Shader
 
 	void setUniform1f(const std::string& name, float value) const;
 	void setUniform1i(const std::string& name, int value) const;
+	int getAttribLocation(const std::string& name) const;
 
  private:
 	int getUniformLocation(const std::string& name) const;
 };
 
-#endif //_SHADER_H_
+#endif // NBODYCUDA_SHADER_H_

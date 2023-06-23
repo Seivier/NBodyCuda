@@ -2,6 +2,8 @@
 // Created by Vicente González on 18-06-23.
 //
 
+#include <glad/glad.h>
+
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -59,10 +61,12 @@ void Shader::bind() const
 {
 	glUseProgram(_id);
 }
+
 void Shader::unbind() const
 {
 	glUseProgram(0);
 }
+
 void Shader::setUniform1f(const std::string& name, float value) const
 {
 	glUniform1f(getUniformLocation(name), value);
@@ -71,6 +75,14 @@ void Shader::setUniform1f(const std::string& name, float value) const
 void Shader::setUniform1i(const std::string& name, int value) const
 {
 	glUniform1i(getUniformLocation(name), value);
+}
+
+int Shader::getAttribLocation(const std::string& name) const
+{
+	auto location = glGetAttribLocation(_id, name.c_str());
+	if (location == -1)
+		std::cerr << "Warning: attribute '" << name << "' doesn't exist!" << std::endl;
+	return location;
 }
 
 int Shader::getUniformLocation(const std::string& name) const
