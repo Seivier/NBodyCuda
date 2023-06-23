@@ -144,6 +144,7 @@ int main(int, char**)
 			simulate(buffer.data, delta);
 
 
+
 		glfwPollEvents();
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -154,7 +155,8 @@ int main(int, char**)
 		{
 			ImGui::Begin("Simulation options");                          // Create a window called "Hello, world!" and append into it.
 
-			ImGui::Checkbox("Pause", &pause);      // Edit bools storing our window open/close state
+//			ImGui::Checkbox("Pause", &pause);      // Edit bools storing our window open/close state
+
 
 			ImGui::Checkbox("View quads?", &use_quads);      // Edit bools storing our window open/close state
 
@@ -168,6 +170,10 @@ int main(int, char**)
 				0.01f,
 				1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("Clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+			const std::string& label = pause ? "Play" : "Pause";
+			if (ImGui::Button(label.c_str()))
+				pause = !pause;
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 			ImGui::End();
