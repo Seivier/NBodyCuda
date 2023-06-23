@@ -5,20 +5,19 @@
 #ifndef NBODYCUDA_BUFFER_H_
 #define NBODYCUDA_BUFFER_H_
 
+#include <glm/vec3.hpp>
+
 #include <iostream>
 #include <vector>
 
 #include "shader.h"
 
-struct Vec3
-{
-	float x, y, z;
-};
 
 struct Point
 {
-	Vec3 position;
-	Vec3 acceleration;
+	glm::vec3 position;
+	glm::vec3 velocity;
+	float mass;
 };
 
 
@@ -26,10 +25,12 @@ class Buffer
 {
  private:
 	unsigned int _ebo, _vbo, _vao;
-	std::vector<Point> _data;
 	float _ratio;
-	Vec3 _acceleration;
+	float _s_mass;
 	unsigned int _size;
+
+ public:
+	std::vector<Point> data;
 
  public:
 	friend std::ostream& operator<<(std::ostream& os, const Buffer& buffer);
@@ -41,9 +42,8 @@ class Buffer
 	void unbind() const;
 
 	inline void setSize(unsigned int size) { _size = size; }
-	inline void setAcceleration(float x, float y, float z) { _acceleration = {x, y, z}; }
+	inline void setSpecialMass(float mass) { _s_mass = mass; }
 	inline void setRatio(float ratio) { _ratio = ratio; }
-	inline unsigned int size() const { return _size; }
 
 	void build();
 

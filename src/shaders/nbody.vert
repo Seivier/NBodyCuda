@@ -1,12 +1,12 @@
 #version 330 core
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 acceleration;
+layout (location = 1) in float mass;
 
-out vec3 geomAcceleration;
+out float geomMass;
 
 void main()
 {
-    geomAcceleration = acceleration;
+    geomMass = mass;
     gl_Position = vec4(position, 1.0);
 }

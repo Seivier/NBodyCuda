@@ -8,13 +8,13 @@
 #include <imgui_impl_opengl3.h>
 
 #include <glad/glad.h>
+
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
+#include <glm/vec3.hpp>
+#include <glm/geometric.hpp>
+
 #include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <random>
 
 #include "shader.h"
 #include "buffer.h"
@@ -23,6 +23,37 @@
 static void glfw_error_callback(int error, const char* description)
 {
 	std::cerr << "GLFW Error " << error << ": " << description << std::endl;
+}
+
+static void simulate(std::vector<Point>& points, float dt)
+{
+	using namespace glm;
+	// NBody gravity simulation
+	constexpr float G = 6.67408e-6f;
+	constexpr float softening = 1e-3f;
+
+
+	for (auto& p1 : points)
+	{
+		auto acceleration = vec3(0.0f);
+		for (auto& p2 : points)
+		{
+			if (&p1 == &p2)
+				continue;
+
+			auto r = p2.position - p1.position;
+			auto distSqr = dot(r, r);
+			auto force = G * p2.mass / (distSqr + softening);
+
+
+			acceleration += force * normalize(r);
+		}
+
+		p1.velocity += acceleration * dt;
+		p1.position += p1.velocity * dt;
+	}
+
+
 }
 
 
@@ -89,8 +120,9 @@ int main(int, char**)
 
 	// Our state
 	bool use_quads = false;
-	ImVec2 acceleration = ImVec2(0.5f, 0.5f);
-	float ratio = 1.0f;
+	bool pause = true;
+	float mass = 30.0f;
+	float ratio = 0.1f;
 	int n = 100;
 	ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
 
@@ -98,14 +130,20 @@ int main(int, char**)
 	Shader shader("shaders/nbody.vert", "shaders/nbody.geom", "shaders/nbody.frag");
 	Buffer buffer;
 	buffer.setLayout(shader);
-	buffer.setAcceleration(acceleration.x, acceleration.y, 0.0f);
-	buffer.setRatio(ratio);
-	buffer.setSize(n);
-	buffer.build();
 
-
+	auto now = static_cast<float>(glfwGetTime());
+	auto last = now;
+	float delta;
 	while (!glfwWindowShouldClose(window))
 	{
+		// simulation
+		now = static_cast<float>(glfwGetTime());
+		delta = now - last;
+		last = now;
+		if (!pause)
+			simulate(buffer.data, delta);
+
+
 		glfwPollEvents();
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -116,16 +154,18 @@ int main(int, char**)
 		{
 			ImGui::Begin("Simulation options");                          // Create a window called "Hello, world!" and append into it.
 
+			ImGui::Checkbox("Pause", &pause);      // Edit bools storing our window open/close state
+
 			ImGui::Checkbox("View quads?", &use_quads);      // Edit bools storing our window open/close state
 
-			ImGui::SliderInt("Number of points", &n, 1, 10000);
+			ImGui::SliderInt("Number of points", &n, 0, 1000);
 			// Vec2 input
-			ImGui::DragFloat2("Acceleration", (float*)&acceleration, 0.01f, 0.0f, 1.0f);
+			ImGui::SliderFloat("Special mass", &mass, 1.0f, 100.0f, "%.3f");
 
 			// ImGui::ColorEdit("Special Gravity", &acceleration, 0.1f, 1.0f, "%.3f");
-			ImGui::SliderFloat("SG Ratio",
+			ImGui::SliderFloat("SM Ratio",
 				&ratio,
-				0.0f,
+				0.01f,
 				1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("Clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -135,7 +175,7 @@ int main(int, char**)
 
 
 		buffer.setSize(n);
-		buffer.setAcceleration(acceleration.x, acceleration.y, 0.0f);
+		buffer.setSpecialMass(mass);
 		buffer.setRatio(ratio);
 		buffer.build();
 

@@ -3,9 +3,9 @@
 layout ( points ) in;
 layout ( triangle_strip, max_vertices = 4 ) out;
 
-in vec3 geomAcceleration[];
+in float geomMass[];
 
-out vec3 fragAcceleration;
+out float fragMass;
 
 uniform bool useQuads;
 
@@ -19,25 +19,25 @@ void main(void){
         vec4 offset = vec4(-1.0, 1.0, 0.0, 0.0);
         vec4 vertexPos = offset*0.01 + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragAcceleration = geomAcceleration[0];
+        fragMass = geomMass[0];
         EmitVertex();
 
         offset = vec4(-1.0, -1.0, 0.0, 0.0);
         vertexPos = offset*0.01 + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragAcceleration = geomAcceleration[0];
+        fragMass = geomMass[0];
         EmitVertex();
 
         offset = vec4(1.0, 1.0, 0.0, 0.0);
         vertexPos = offset*0.01 + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragAcceleration = geomAcceleration[0];
+        fragMass = geomMass[0];
         EmitVertex();
 
         offset = vec4(1.0, -1.0, 0.0, 0.0);
         vertexPos = offset*0.01 + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragAcceleration = geomAcceleration[0];
+        fragMass = geomMass[0];
         EmitVertex();
     }
     else
@@ -45,19 +45,19 @@ void main(void){
         vec4 offset = vec4(-1.0, -1.0, 0.0, 0.0);
         vec4 vertexPos = offset*0.01 + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragAcceleration = geomAcceleration[0];
+        fragMass = geomMass[0];
         EmitVertex();
 
         offset = vec4(1.0, -1.0, 0.0, 0.0);
         vertexPos = offset*0.01 + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragAcceleration = geomAcceleration[0];
+        fragMass = geomMass[0];
         EmitVertex();
 
         offset = vec4(0.0, 1.0, 0.0, 0.0);
         vertexPos = offset*0.01 + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragAcceleration = geomAcceleration[0];
+        fragMass = geomMass[0];
         EmitVertex();
     }
 
