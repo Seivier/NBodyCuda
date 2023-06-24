@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 3.25)
-project(NBodyCuda)
+cmake_minimum_required(VERSION 3.8)
+project(NBodyCuda LANGUAGES CXX CUDA C)
+# set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} "-g -G")  # enable cuda-gdb
+
+set(CMAKE_CUDA_ARCHITECTURES 75)
 
 find_package(OpenGL REQUIRED)
 

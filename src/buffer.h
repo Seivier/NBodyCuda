@@ -29,6 +29,9 @@ class Buffer
 	float _s_mass;
 	unsigned int _size;
 
+	struct cudaGraphicsResource* _cuda_resource;
+	float* _cuda_points;
+
  public:
 	std::vector<Point> data;
 
@@ -41,6 +44,9 @@ class Buffer
 	void bind() const;
 	void unbind() const;
 
+	void map();
+	void unmap();
+
 	inline void setSize(unsigned int size) { _size = size; }
 	inline void setSpecialMass(float mass) { _s_mass = mass; }
 	inline void setRatio(float ratio) { _ratio = ratio; }
@@ -48,6 +54,8 @@ class Buffer
 	void build();
 
 	void setLayout(const Shader& shader) const;
+
+	float* getCudaPoints() const;
 };
 
 
