@@ -190,6 +190,7 @@ int main(int, char**)
 	auto now = static_cast<float>(glfwGetTime());
 	auto last = now;
 	float delta;
+
 	while (!glfwWindowShouldClose(window))
 	{
 		// simulation
@@ -236,12 +237,12 @@ int main(int, char**)
 
 			ImGui::SliderInt("Number of points", &n, 0, 5000);
 			// Vec2 input
-			ImGui::SliderFloat("Special mass", &mass, 1.0f, 100.0f, "%.3f");
+			ImGui::SliderFloat("Special mass", &mass, 1.0f, 500.0f, "%.3f");
 
 			// ImGui::ColorEdit("Special Gravity", &acceleration, 0.1f, 1.0f, "%.3f");
 			ImGui::SliderFloat("SM Ratio",
 				&ratio,
-				0.01f,
+				0.0f,
 				1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("Clear color", (float*)&clear_color); // Edit 3 floats representing a color
 

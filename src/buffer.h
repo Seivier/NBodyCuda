@@ -30,7 +30,7 @@ class Buffer
 	unsigned int _size;
 
 	struct cudaGraphicsResource* _cuda_resource;
-	float* _cuda_points;
+	float* _cuda_points{};
 
  public:
 	std::vector<Point> data;

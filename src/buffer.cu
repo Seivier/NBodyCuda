@@ -120,13 +120,9 @@ void Buffer::setLayout(const Shader& shader) const
 	glEnableVertexAttribArray(pos);
 	glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, sizeof(Point), nullptr);
 
-//	auto vel = shader.getAttribLocation("velocity");
-//	glEnableVertexAttribArray(vel);
-//	glVertexAttribPointer(vel, 3, GL_FLOAT, GL_FALSE, sizeof(Point), (const void*)(3 * sizeof(float)));
-//
-//	auto acc = shader.getAttribLocation("acceleration");
-//	glEnableVertexAttribArray(acc);
-//	glVertexAttribPointer(acc, 3, GL_FLOAT, GL_FALSE, sizeof(Point), (const void*)(6 * sizeof(float)));
+	auto vel = shader.getAttribLocation("velocity");
+	glEnableVertexAttribArray(vel);
+	glVertexAttribPointer(vel, 3, GL_FLOAT, GL_FALSE, sizeof(Point), (const void*)(3 * sizeof(float)));
 
 	auto mass = shader.getAttribLocation("mass");
 	glEnableVertexAttribArray(mass);
