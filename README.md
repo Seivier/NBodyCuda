@@ -2,6 +2,11 @@
 Este proyecto requiere CUDA.
 
 ## Instrucciones de uso
+Asegurarse que los submodulos se encuentren actualizados:
+```bash
+git submodule update --init --recursive
+```
+
 Para compilar el programa se debe ejecutar el siguiente comando:
 ```bash
 mkdir build && cd build
