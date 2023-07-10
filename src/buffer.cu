@@ -124,9 +124,9 @@ void Buffer::setLayout(const Shader& shader) const
 	glEnableVertexAttribArray(vel);
 	glVertexAttribPointer(vel, 3, GL_FLOAT, GL_FALSE, sizeof(Point), (const void*)(3 * sizeof(float)));
 
-	auto mass = shader.getAttribLocation("mass");
-	glEnableVertexAttribArray(mass);
-	glVertexAttribPointer(mass, 1, GL_FLOAT, GL_FALSE, sizeof(Point), (const void*)(6 * sizeof(float)));
+//	auto mass = shader.getAttribLocation("mass");
+//	glEnableVertexAttribArray(mass);
+//	glVertexAttribPointer(mass, 1, GL_FLOAT, GL_FALSE, sizeof(Point), (const void*)(6 * sizeof(float)));
 
 	unbind();
 	shader.unbind();

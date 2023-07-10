@@ -4,7 +4,6 @@ layout ( points ) in;
 layout ( triangle_strip, max_vertices = 4 ) out;
 
 in vec3 geomVelocity[];
-in float geomMass[];
 
 out float fragMass;
 
@@ -15,6 +14,7 @@ const float size = 0.01;
 void main(void){
 
     vec3 vel = geomVelocity[0];
+    float speed = length(vel);
     vec3 dir = normalize(vel);
     if (vel == vec3(0.0))
         dir = vec3(0.0, 1.0, 0.0);
@@ -32,7 +32,7 @@ void main(void){
         angleRadians = -angleRadians;
     }
 
-    // Convierte el ángulo a grados si lo deseas
+    // Convierte el ángulo a grados
     float angle = angleRadians;
 
     mat3 rot = mat3(
@@ -41,37 +41,34 @@ void main(void){
         0.0, 0.0, 1.0
     );
 
-    // vec4 dir_x = vec3(normalize(geom_acceleration[0]), 0.0);
-    // rotate 90 degrees
-    // vec4 dir_y = vec4(-dir_x.y, dir_x.x, 0.0, 0.0);
     if (useQuads)
     {
         vec3 offset = vec3(-1.0, 1.0, 0.0)*size;
         offset = rot*offset;
         vec4 vertexPos = vec4(offset, 0.0) + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragMass = geomMass[0];
+        fragMass = speed;
         EmitVertex();
 
         offset = vec3(-1.0, -1.0, 0.0)*size;
         offset = rot*offset;
         vertexPos = vec4(offset, 0.0) + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragMass = geomMass[0];
+        fragMass = speed;
         EmitVertex();
 
         offset = vec3(1.0, 1.0, 0.0)*size;
         offset = rot*offset;
         vertexPos = vec4(offset, 0.0) + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragMass = geomMass[0];
+        fragMass = speed;
         EmitVertex();
 
         offset = vec3(1.0, -1.0, 0.0)*size;
         offset = rot*offset;
         vertexPos = vec4(offset, 0.0) + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragMass = geomMass[0];
+        fragMass = speed;
         EmitVertex();
     }
     else
@@ -80,21 +77,21 @@ void main(void){
         offset = rot*offset;
         vec4 vertexPos = vec4(offset, 0.0) + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragMass = geomMass[0];
+        fragMass = speed;
         EmitVertex();
 
         offset = vec3(1.0, -1.0, 0.0) * size;
         offset = rot*offset;
         vertexPos = vec4(offset, 0.0) + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragMass = geomMass[0];
+        fragMass = speed;
         EmitVertex();
 
         offset = vec3(0.0, 1.0, 0.0) * size;
         offset = rot*offset;
         vertexPos = vec4(offset, 0.0) + gl_in[0].gl_Position;
         gl_Position = vertexPos;
-        fragMass = geomMass[0];
+        fragMass = speed;
         EmitVertex();
     }
 

@@ -52,6 +52,24 @@ Shader::Shader(const std::string& vertexPath, const std::string& geometryPath, c
 	}
 }
 
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
+	: _id(0)
+{
+	_id = glCreateProgram();
+	attachSources(GL_VERTEX_SHADER, _id, vertexPath);
+	attachSources(GL_FRAGMENT_SHADER, _id, fragmentPath);
+
+	glLinkProgram(_id);
+	int success;
+	char infoLog[512];
+	glGetProgramiv(_id, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(_id, 512, nullptr, infoLog);
+		std::cerr << "Shader linking error: " << infoLog << std::endl;
+	}
+}
+
 Shader::~Shader()
 {
 	glDeleteProgram(_id);

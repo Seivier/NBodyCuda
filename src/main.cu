@@ -99,6 +99,7 @@ __global__ void simulate_cuda(float* points, float dt, int n)
 	points[idx*7 + 3] += a_x * dt;
 	points[idx*7 + 4] += a_y * dt;
 	points[idx*7 + 5] += a_z * dt;
+
 }
 
 __global__ void update_cuda(float* points, float dt, int n)
@@ -143,7 +144,7 @@ int main(int, char**)
 
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	// Create window with graphics context
-	GLFWwindow* window = glfwCreateWindow(800, 800, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(800, 800, "Tarea 3", nullptr, nullptr);
 	if (window == nullptr)
 		return 1;
 	glfwMakeContextCurrent(window);
@@ -174,6 +175,7 @@ int main(int, char**)
 
 	// Our state
 	bool use_quads = false;
+	bool only_points = true;
 	bool pause = true;
 	bool use_gpu = false;
 
@@ -184,8 +186,10 @@ int main(int, char**)
 
 	// Create a shader program
 	Shader shader("shaders/nbody.vert", "shaders/nbody.geom", "shaders/nbody.frag");
+	Shader shader_points("shaders/pnbody.vert", "shaders/nbody.frag");
 	Buffer buffer;
 	buffer.setLayout(shader);
+	buffer.setLayout(shader_points);
 
 	auto now = static_cast<float>(glfwGetTime());
 	auto last = now;
@@ -230,7 +234,8 @@ int main(int, char**)
 
 //			ImGui::Checkbox("Pause", &pause);      // Edit bools storing our window open/close state
 
-
+			ImGui::Checkbox("Only points?", &only_points);      // Edit bools storing our window open/close state
+			ImGui::SameLine();
 			ImGui::Checkbox("View quads?", &use_quads);      // Edit bools storing our window open/close state
 			ImGui::SameLine();
 			ImGui::Checkbox("Use GPU?", &use_gpu);      // Edit bools storing our window open/close state
@@ -268,16 +273,29 @@ int main(int, char**)
 			clear_color.z * clear_color.w,
 			clear_color.w);
 
-		shader.bind();
+		if (only_points)
+		{
+			shader_points.bind();
+			buffer.bind();
 
-		shader.setUniform1i("useQuads", use_quads);
+			glDrawElements(GL_POINTS, n, GL_UNSIGNED_INT, 0);
 
-		buffer.bind();
+			buffer.unbind();
+			shader_points.unbind();
+		}
+		else
+		{
+			shader.bind();
+			shader.setUniform1i("useQuads", use_quads);
+			buffer.bind();
 
-		glDrawElements(GL_POINTS, n, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_POINTS, n, GL_UNSIGNED_INT, 0);
 
-		buffer.unbind();
-		shader.unbind();
+			buffer.unbind();
+			shader.unbind();
+		}
+
+
 
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
